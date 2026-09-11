@@ -67,9 +67,10 @@ const CFG = {
   contrast:        1.09,
   brightness:      0.0,
   flowInfluence:   0.43,
-  flowStrength:    1.09,
+  flowStrength:    1.8,
   flowFrequency:   0.53,
-  lifeSpeed:       0.32,
+  lifeSpeed:       0.12,        // ciclo de vida da partícula (menor = menos 'pisca')
+  returnSpeed:     2.5,         // força que puxa a partícula de volta ao lugar de origem
   mouseRadius:     0.22,        // fração da altura da tela
   mouseStrength:   2.6,
   pointSize:       1.5
@@ -302,6 +303,7 @@ function init(img) {
       uFlowStrength:  { value: CFG.flowStrength },
       uFlowFrequency: { value: CFG.flowFrequency },
       uLifeSpeed:     { value: CFG.lifeSpeed },
+      uReturn:        { value: CFG.returnSpeed },
       uMouse:         { value: new THREE.Vector3(0, 0, 0) },
       uMouseRadius:   { value: H * CFG.mouseRadius },
       uMouseStrength: { value: CFG.mouseStrength },
@@ -314,7 +316,7 @@ function init(img) {
     fragmentShader: NOISE + `
       uniform sampler2D uParticles;
       uniform sampler2D uBase;
-      uniform float uTime, uDelta, uLifeSpeed;
+      uniform float uTime, uDelta, uLifeSpeed, uReturn;
       uniform float uFlowInfluence, uFlowStrength, uFlowFrequency;
       uniform vec3  uMouse;
       uniform float uMouseRadius, uMouseStrength, uScale;
@@ -337,9 +339,9 @@ function init(img) {
           strength = smoothstep(influence, 1.0, strength);
 
           vec3 flow = vec3(
-            simplexNoise4d(vec4(particle.xyz * freq + 0.0, uTime * 0.25)),
-            simplexNoise4d(vec4(particle.xyz * freq + 1.0, uTime * 0.25)),
-            simplexNoise4d(vec4(particle.xyz * freq + 2.0, uTime * 0.25))
+            simplexNoise4d(vec4(particle.xyz * freq + 0.0, uTime * 0.10)),
+            simplexNoise4d(vec4(particle.xyz * freq + 1.0, uTime * 0.10)),
+            simplexNoise4d(vec4(particle.xyz * freq + 2.0, uTime * 0.10))
           );
           particle.xyz += normalize(flow) * uDelta * strength * uFlowStrength * 32.0 * uScale;
 
@@ -347,6 +349,11 @@ function init(img) {
           float dist = length(d);
           float f    = 1.0 - smoothstep(0.0, uMouseRadius, dist);
           particle.xy += normalize(d + 0.0001) * f * f * uMouseStrength * uMouseRadius * uDelta;
+
+          // mola: traz a partícula de volta ao ponto de origem sem
+          // esperar o fim do ciclo de vida — é o que devolve a forma
+          // logo depois que o cursor passa
+          particle.xyz += (base.xyz - particle.xyz) * min(uReturn * uDelta, 1.0);
 
           particle.a += uDelta * uLifeSpeed;
         }
