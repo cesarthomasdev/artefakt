@@ -110,6 +110,10 @@ float simplexNoise4d(vec4 v){
  *  BOOT
  * ------------------------------------------------------------------ */
 const root = document.getElementById('ascii-hero');
+if (!root) {
+  console.warn('[ascii] #ascii-hero não existe nesta página — script inativo.');
+} else {
+
 if (root.dataset.text) CFG.text = root.dataset.text;
 
 const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -449,3 +453,5 @@ window.addEventListener('resize', () => {
     simMaterial.uniforms.uMouseRadius.value = H * CFG.mouseRadius;
   }, 200);
 });
+
+} // fim do guard #ascii-hero
