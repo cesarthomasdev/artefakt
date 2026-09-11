@@ -139,21 +139,28 @@ float simplexNoise4d(vec4 v){
  *  BOOT
  * ------------------------------------------------------------------ */
 const root = document.getElementById('ascii-logo');
-if (!root) throw new Error('[ascii] elemento #ascii-logo não encontrado');
 
-if (root.dataset.src)   CFG.src = root.dataset.src;
-if (root.dataset.pick)  CFG.pick = root.dataset.pick;
-if (root.dataset.color) CFG.colorMode = root.dataset.color;
-if (!CFG.src) throw new Error('[ascii] defina data-src no #ascii-logo');
+if (!root) {
+  console.warn('[ascii] #ascii-logo não existe nesta página — script inativo.');
+} else {
 
-const isMobile = window.matchMedia('(max-width: 767px)').matches;
-if (isMobile) { CFG.columns = 90; CFG.renderScale = 0.9; CFG.fitWidth = 0.85; }
+  if (root.dataset.src)   CFG.src = root.dataset.src;
+  if (root.dataset.pick)  CFG.pick = root.dataset.pick;
+  if (root.dataset.color) CFG.colorMode = root.dataset.color;
 
-const image = new Image();
-image.crossOrigin = 'anonymous';
-image.onerror = () => console.error('[ascii] falha ao carregar a imagem:', CFG.src);
-image.onload = () => { try { init(image); } catch (e) { console.error('[ascii]', e); } };
-image.src = CFG.src;
+  if (!CFG.src) {
+    console.warn('[ascii] defina data-src no #ascii-logo.');
+  } else {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobile) { CFG.columns = 90; CFG.renderScale = 0.9; CFG.fitWidth = 0.85; }
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onerror = () => console.error('[ascii] falha ao carregar a imagem:', CFG.src);
+    image.onload = () => { try { init(image); } catch (e) { console.error('[ascii]', e); } };
+    image.src = CFG.src;
+  }
+}
 
 /* ------------------------------------------------------------------ *
  *  1. AMOSTRAGEM DA IMAGEM  →  nuvem de pontos + cores
